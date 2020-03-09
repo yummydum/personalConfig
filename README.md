@@ -1,1 +1,1 @@
-# atsushisumita-yahoo.co.jp
+Repo to store personal configs
