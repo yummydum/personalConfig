@@ -1,1 +1,1 @@
-# Collect personal configs
+Repo to store personal configs
