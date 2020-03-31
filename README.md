@@ -1,1 +1,1 @@
-# atsushisumita-yahoo.co.jp
+# Collect personal configs
