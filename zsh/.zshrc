@@ -9,7 +9,7 @@ fi
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/atsushisumita/.oh-my-zsh"
+export ZSH="/Users/<username>/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -112,85 +112,31 @@ if command -v pyenv 1>/dev/null 2>&1; then
 fi
 eval "$(pyenv virtualenv-init -)"
 export DOCKER_BUILDKIT=1
+
+## encodings
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 
 # Cool print system info
 neofetch
 
-
 ### Alias
-
-## DB
-alias up_test_db='docker run --name mysql -e MYSQL_ROOT_PASSWORD=test -e MYSQL_DATABASE=alternadb_local -p 3306:3306 -d mysql:5.7 --character-set-server=utf8 --collation-server=utf8_unicode_ci'
-alias rm_test_db="docker rm --force $(docker ps -a | grep mysql | awk '{print $1}')"
 
 ## pytest
 alias pytest_short="python -m pytest -x --tb=line"
 
-## oh my zsh
-alias cat="ccat"
-alias less="cless"
-
-## others
-alias sshkataws='ssh -i /Users/atsushisumita/.ssh/effissimo-key.pem -L 8887:localhost:8887 ec2-user@ec2-54-95-197-173.ap-northeast-1.compute.amazonaws.com'
-alias show_zshrc='vim ~/.zshrc'
-
 ### Functions
-function ncenv_local()
-{
-        export NC__ENV=local
-        unset ALTDB_USER_NAME
-}
-function ncenv_dev()
-{
-        export NC__ENV=dev
-        export ALTDB_USER_NAME=admin_dev
-}
 
-function ncenv_prod()
+function notebook_remote()
 {
-        export NC__ENV=prod
-        export ALTDB_USER_NAME=admin_prod
+  aws ec2 start-instances --instance-ids <id> &&  echo 'Now starting instance, please wait...' && aws ec2 wait instance-running --instance-ids <id> 
+  TOKEN=$(openssl rand -base64 32)
+  command="jupyter notebook --port 8887 --no-browser --NotebookApp.token=${TOKEN}"
+  ssh <user@hostname> "cd notebook_dir && tmux new -d -s notebook && tmux send-keys -t notebook.0 '${command}' ENTER"
+  ssh -f -N <user@hostname>  # keep tunnel 
+  sleep 2
+  open "http://localhost:8887/?token=${TOKEN}"
 }
-
-function push_ecr()
-{
-  echo "Did you push the source code to github in advance?(y/N): "
-  if read -q; then
-    curr=$(pwd);
-    cd $(git rev-parse --show-toplevel)/docker/process/;
-    make login build push;
-    cd ${curr};
-  else
-  fi
-}
-
-function push_ecr_dev()
-{
-  echo "Did you push the source code to github in advance?(y/N): "
-  if read -q; then
-    curr=$(pwd);
-    cd $(git rev-parse --show-toplevel)/docker/process/;
-    make login build_develop push_develop;
-    cd ${curr};
-  else
-  fi
-}
-
-function push_ecr_prod()
-{
-  echo "Did you push the source code to github in advance?(y/N): "
-  if read -q; then
-    curr=$(pwd);
-    cd $(git rev-parse --show-toplevel)/docker/process/;
-    make login build_master push_master;
-    cd ${curr};
-  else
-  fi
-
-}
-
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
