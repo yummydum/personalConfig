@@ -129,14 +129,17 @@ alias pytest_short="python -m pytest -x --tb=line"
 
 function notebook_remote()
 {
-  aws ec2 start-instances --instance-ids <id> &&  echo 'Now starting instance, please wait...' && aws ec2 wait instance-running --instance-ids <id> 
-  
+  aws ec2 start-instances --instance-ids <id> &&  echo 'Now starting instance, please wait...' && aws ec2 wait instance-running --instance-ids <id>
+
+  existing=$(ssh <user@host> 'tmux ls | grep notebook')
+  [ -z "$existing" ] && ssh <user@host> 'tmux kill-session -t notebook'
+
   TOKEN=$(openssl rand -base64 32)
   command="jupyter notebook --port 8887 --no-browser --NotebookApp.token=${TOKEN}"
-  ssh <user@hostname> "cd notebook_dir && tmux kill-session -t notebook && tmux new -d -s notebook && tmux send-keys -t notebook.0 '${command}' ENTER"
+  ssh <user@host> "cd notebook_dir && tmux new -d -s notebook && tmux send-keys -t notebook.0 '${command}' ENTER" 
 
-  pkill -f 'ssh -f -N cca_sumita_ws'
-  ssh -f -N <user@hostname>  # keep tunnel 
+  pkill -f 'ssh -f -N <user@host> -L 8887:localhost:8887'
+  ssh -f -N <user@host> -L 8887:localhost:8887
 
   sleep 2
   open "http://localhost:8887/?token=${TOKEN}"
