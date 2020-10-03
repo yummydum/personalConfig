@@ -132,7 +132,7 @@ function notebook_remote()
   aws ec2 start-instances --instance-ids <id> &&  echo 'Now starting instance, please wait...' && aws ec2 wait instance-running --instance-ids <id>
 
   existing=$(ssh <user@host> 'tmux ls | grep notebook')
-  [ -z "$existing" ] && ssh <user@host> 'tmux kill-session -t notebook'
+  [ ! -z "$existing" ] && ssh <user@host> 'tmux kill-session -t notebook'
 
   TOKEN=$(openssl rand -base64 32)
   command="jupyter notebook --port 8887 --no-browser --NotebookApp.token=${TOKEN}"
